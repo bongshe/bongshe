@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { Category } from '@prisma/client'
 
 export default function SubcategoryForm() {
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [categoryId, setCategoryId] = useState('')
-  const [categories, setCategories] = useState<any[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [success, setSuccess] = useState(false)
 
   useEffect(() => {
