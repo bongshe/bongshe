@@ -3,17 +3,13 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/app/lib/prisma'
 import ProductCard from '@/components/ProductCard'
 import type { Metadata } from 'next'
-
-interface PageParams {
-  params: { 
-    categorySlug: string
-    subcategorySlug: string 
-  }
-}
+import type { SubcategoryPageProps } from '@/types/pages'
 
 export async function generateMetadata({
   params
-}: PageParams): Promise<Metadata> {
+}: {
+  params: { categorySlug: string; subcategorySlug: string }
+}): Promise<Metadata> {
   const subcategory = await prisma.subcategory.findFirst({
     where: {
       slug: params.subcategorySlug,
@@ -29,20 +25,17 @@ export async function generateMetadata({
     }
   })
 
-  if (!subcategory) {
-    return {
-      title: 'Subcategory Not Found',
-      description: 'The requested subcategory does not exist'
-    }
-  }
-
   return {
-    title: `${subcategory.category.name} - ${subcategory.name}`,
-    description: `Browse products in ${subcategory.name} subcategory`
+    title: subcategory 
+      ? `${subcategory.category.name} - ${subcategory.name}`
+      : 'Subcategory Not Found',
+    description: subcategory 
+      ? `Browse products in ${subcategory.name} subcategory`
+      : 'Subcategory not found'
   }
 }
 
-export default async function SubcategoryPage({ params }: PageParams) {
+export default async function SubcategoryPage({ params }: SubcategoryPageProps) {
   const subcategory = await prisma.subcategory.findFirst({
     where: {
       slug: params.subcategorySlug,
