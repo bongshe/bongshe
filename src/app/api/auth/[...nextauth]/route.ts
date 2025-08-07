@@ -1,7 +1,6 @@
-// src/app/api/aut/[...nextauth]/route.ts
-
+// src/app/api/auth/[...nextauth]/route.ts
 import type { NextAuthOptions } from "next-auth"
-import NextAuth from 'next-auth'
+import NextAuth, {DefaultSession} from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
@@ -13,6 +12,27 @@ import {
 
 const prisma = new PrismaClient()
 
+// 1. Add type declarations for your custom session properties
+declare module "next-auth" {
+  interface User {
+    id: string
+    role: string
+  }
+  
+  interface Session {
+    user: {
+      id: string
+      role: string
+    } & DefaultSession["user"]
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string
+    role: string
+  }
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -86,8 +106,10 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
-      session.user.id = token.id
-      session.user.role = token.role
+      if (session.user) {
+        session.user.id = token.id as string
+        session.user.role = token.role as string
+      }
       return session
     },
   },
