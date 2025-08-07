@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  name             String?
+  password         String
+  role             Role      @default(CUSTOMER)
+  emailVerified    Boolean   @default(false)
+  whatsappVerified Boolean   @default(false)
+  verificationCode String?   @db.VarChar(6)
+  verification     VerificationCode?
+  phone            String?   @unique
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  orders           Order[]
+  products         Product[]
+}
+
+model Category {
+  id            String        @id @default(uuid())
+  name          String
+  slug          String        @unique
+  products      Product[]
+  subcategories Subcategory[]
+}
+
+model Subcategory {
+  id         String    @id @default(uuid())
+  name       String
+  slug       String    @unique
+  categoryId String
+  products   Product[]
+  category   Category  @relation(fields: [categoryId], references: [id])
+}
+
+model Product {
+  id            String       @id @default(uuid())
+  title         String
+  slug          String       @unique
+  description   String
+  price         Float
+  galleryImages String[]
+  status        String       @default("draft")
+  featuredImage String
+  stock         Int
+  categoryId    String
+  subcategoryId String?
+  userId        String
+  createdAt     DateTime     @default(now())
+  orderItems    OrderItem[]
+  category      Category     @relation(fields: [categoryId], references: [id])
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
+  user          User         @relation(fields: [userId], references: [id])
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String?
+  totalAmount Float
+  status      OrderStatus @default(PENDING)
+  name        String
+  email       String
+  phone       String
+  address     String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User?       @relation(fields: [userId], references: [id])
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id              String  @id @default(uuid())
+  orderId         String
+  productId       String
+  quantity        Int
+  priceAtPurchase Float
+  order           Order   @relation(fields: [orderId], references: [id])
+  product         Product @relation(fields: [productId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model VerificationCode {
+  userId    String   @id
+  code      String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+}
