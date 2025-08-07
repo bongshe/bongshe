@@ -4,16 +4,16 @@ import { prisma } from '@/app/lib/prisma'
 import ProductCard from '@/components/ProductCard'
 import type { Metadata } from 'next'
 
-interface PageProps {
-  params: {
+interface PageParams {
+  params: { 
     categorySlug: string
-    subcategorySlug: string
+    subcategorySlug: string 
   }
 }
 
 export async function generateMetadata({
   params
-}: PageProps): Promise<Metadata> {
+}: PageParams): Promise<Metadata> {
   const subcategory = await prisma.subcategory.findFirst({
     where: {
       slug: params.subcategorySlug,
@@ -31,7 +31,8 @@ export async function generateMetadata({
 
   if (!subcategory) {
     return {
-      title: 'Subcategory Not Found'
+      title: 'Subcategory Not Found',
+      description: 'The requested subcategory does not exist'
     }
   }
 
@@ -41,13 +42,13 @@ export async function generateMetadata({
   }
 }
 
-export default async function SubcategoryPage({ params }: PageProps) {
+export default async function SubcategoryPage({ params }: PageParams) {
   const subcategory = await prisma.subcategory.findFirst({
     where: {
       slug: params.subcategorySlug,
       category: { slug: params.categorySlug }
     },
-    include: { 
+    include: {
       products: {
         orderBy: {
           createdAt: 'desc'
