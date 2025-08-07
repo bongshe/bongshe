@@ -2,19 +2,24 @@
 
 'use client'
 
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
 export default function VerifyPage() {
-  const searchParams = useSearchParams()
   const router = useRouter()
 
-  const email = searchParams.get('email') || ''
-  const callbackUrl = searchParams.get('callbackUrl') || '/'
-
+  const [email, setEmail] = useState('')
+  const [callbackUrl, setCallbackUrl] = useState('/')
   const [code, setCode] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    // Parse URL parameters on the client side
+    const urlParams = new URLSearchParams(window.location.search)
+    setEmail(urlParams.get('email') || '')
+    setCallbackUrl(urlParams.get('callbackUrl') || '/')
+  }, [])
 
   const handleVerify = async () => {
     setLoading(true)

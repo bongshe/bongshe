@@ -3,7 +3,23 @@
 
 import { prisma } from '@/app/lib/prisma'
 
-export async function createOrder(orderData) {
+interface OrderItem {
+  productId: string
+  quantity: number
+  priceAtPurchase: number
+}
+
+interface OrderData {
+  userId?: string | null
+  totalAmount: number
+  name: string
+  email: string
+  phone: string
+  address: string
+  items: OrderItem[]
+}
+
+export async function createOrder(orderData: OrderData) {
   try {
     const order = await prisma.order.create({
       data: {
@@ -14,12 +30,15 @@ export async function createOrder(orderData) {
         phone: orderData.phone,
         address: orderData.address,
         items: {
-          create: orderData.items.map(item => ({
+          create: orderData.items.map((item: OrderItem) => ({
             productId: item.productId,
             quantity: item.quantity,
             priceAtPurchase: item.priceAtPurchase
           }))
         }
+      },
+      include: {
+        items: true
       }
     })
     

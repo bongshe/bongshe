@@ -1,19 +1,14 @@
 // src/app/api/payment/route.ts
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
-export async function POST(req: NextRequest) {
-  const data = await req.json()
-  
-  // In a real implementation, you would integrate with SSLCommerz here
-  // This is just a mock implementation
-  
+export async function POST() {
   try {
-    // Simulate payment processing
+    // Simulate payment processing delay
     await new Promise(resolve => setTimeout(resolve, 2000))
-    
+
     // Mock payment success in 90% of cases
     const success = Math.random() > 0.1
-    
+
     if (success) {
       return NextResponse.json({
         success: true,
@@ -26,7 +21,7 @@ export async function POST(req: NextRequest) {
         message: 'Payment failed - insufficient funds'
       }, { status: 400 })
     }
-  } catch (error) {
+  } catch {
     return NextResponse.json({
       success: false,
       message: 'Payment processing error'

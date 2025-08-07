@@ -1,11 +1,14 @@
 // src/app/checkout/OrderConfirmation.tsx
 'use client'
 
-import { useEffect } from 'react'
 import Link from 'next/link'
 import { FiCheckCircle } from 'react-icons/fi'
 
-export default function OrderConfirmation({ orderId }) {
+interface OrderConfirmationProps {
+  orderId: string;
+}
+
+export default function OrderConfirmation({ orderId }: OrderConfirmationProps) {
   return (
     <div className="bg-white rounded-lg shadow-md p-8 text-center">
       <FiCheckCircle className="text-green-500 text-6xl mx-auto mb-4" />

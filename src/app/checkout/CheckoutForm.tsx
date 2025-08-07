@@ -1,30 +1,52 @@
 // src/app/checkout/CheckoutForm.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, ChangeEvent, FormEvent } from 'react'
 import { useSession } from 'next-auth/react'
+import { ContactInfo } from '@/types/checkout'
 
-export default function CheckoutForm({ onSubmit, initialData }) {
+interface FormData {
+  name: string
+  email: string
+  phone: string
+  address: string
+}
+
+interface CheckoutFormProps {
+  onSubmit: (data: ContactInfo) => void
+  initialData?: Partial<ContactInfo>
+}
+
+
+interface FormErrors {
+  name?: string
+  email?: string
+  phone?: string
+  address?: string
+}
+
+export default function CheckoutForm({ onSubmit, initialData }: CheckoutFormProps) {
   const { data: session } = useSession()
-  const [formData, setFormData] = useState(initialData || {
-    name: session?.user?.name || '',
-    email: session?.user?.email || '',
-    phone: '',
-    address: ''
+  const [formData, setFormData] = useState<FormData>({
+    name: initialData?.name || session?.user?.name || '',
+    email: initialData?.email || session?.user?.email || '',
+    phone: initialData?.phone || '',
+    address: initialData?.address || ''
   })
-  const [errors, setErrors] = useState({})
+  
+  const [errors, setErrors] = useState<FormErrors>({})
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
     
-    if (errors[name]) {
+    if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }
   }
 
-  const validate = () => {
-    const newErrors = {}
+  const validate = (): boolean => {
+    const newErrors: FormErrors = {}
     
     if (!formData.name.trim()) newErrors.name = 'Name is required'
     if (!formData.email.trim()) {
@@ -39,7 +61,7 @@ export default function CheckoutForm({ onSubmit, initialData }) {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     if (validate()) {
       onSubmit(formData)

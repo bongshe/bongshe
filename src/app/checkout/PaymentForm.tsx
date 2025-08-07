@@ -4,24 +4,50 @@
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 
-export default function PaymentForm({ onSubmit, loading }) {
+// Define types for new and saved card payments
+interface SavedCard {
+  id: string;
+  last4: string;
+  brand: string;
+}
+
+interface NewCard {
+  number: string;
+  expiry: string;
+  cvc: string;
+  name: string;
+}
+
+// Union type for the payment data passed to onSubmit
+export type PaymentData =
+  | { method: 'card'; type: 'saved'; cardId?: string }
+  | { method: 'card'; type: 'new'; details: NewCard }
+  | { method: 'mobile' | 'cash' };
+
+interface PaymentFormProps {
+  onSubmit: (paymentData: PaymentData) => void;
+  loading: boolean;
+}
+
+export default function PaymentForm({ onSubmit, loading }: PaymentFormProps) {
   const { data: session } = useSession()
-  const [paymentMethod, setPaymentMethod] = useState('card')
-  const [savedCards, setSavedCards] = useState([
+  const [paymentMethod, setPaymentMethod] = useState<string>('card')
+  const [savedCards] = useState<SavedCard[]>([
     { id: 'card1', last4: '4242', brand: 'Visa' }
   ])
-  const [selectedCard, setSelectedCard] = useState('card1')
-  const [newCard, setNewCard] = useState({
+  const [selectedCard, setSelectedCard] = useState<string>('card1')
+  const [newCard, setNewCard] = useState<NewCard>({
     number: '',
     expiry: '',
     cvc: '',
     name: ''
   })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    
-    let paymentData
+
+    let paymentData: PaymentData
+
     if (paymentMethod === 'card') {
       if (selectedCard === 'new') {
         paymentData = {
@@ -34,13 +60,13 @@ export default function PaymentForm({ onSubmit, loading }) {
         paymentData = {
           method: 'card',
           type: 'saved',
-          cardId: card.id
+          cardId: card?.id
         }
       }
     } else {
-      paymentData = { method: paymentMethod }
+      paymentData = { method: paymentMethod as 'mobile' | 'cash' }
     }
-    
+
     onSubmit(paymentData)
   }
 
@@ -52,53 +78,25 @@ export default function PaymentForm({ onSubmit, loading }) {
         <div className="mb-6">
           <label className="block text-sm font-medium mb-3">Select Payment Method</label>
           <div className="space-y-3">
-            <div className="flex items-center">
-              <input
-                type="radio"
-                id="card"
-                name="paymentMethod"
-                value="card"
-                checked={paymentMethod === 'card'}
-                onChange={() => setPaymentMethod('card')}
-                className="mr-3"
-              />
-              <label htmlFor="card" className="flex items-center">
-                <span>Credit/Debit Card</span>
-              </label>
-            </div>
-            
-            <div className="flex items-center">
-              <input
-                type="radio"
-                id="mobile"
-                name="paymentMethod"
-                value="mobile"
-                checked={paymentMethod === 'mobile'}
-                onChange={() => setPaymentMethod('mobile')}
-                className="mr-3"
-              />
-              <label htmlFor="mobile" className="flex items-center">
-                <span>Mobile Banking</span>
-              </label>
-            </div>
-            
-            <div className="flex items-center">
-              <input
-                type="radio"
-                id="cash"
-                name="paymentMethod"
-                value="cash"
-                checked={paymentMethod === 'cash'}
-                onChange={() => setPaymentMethod('cash')}
-                className="mr-3"
-              />
-              <label htmlFor="cash" className="flex items-center">
-                <span>Cash on Delivery</span>
-              </label>
-            </div>
+            {['card', 'mobile', 'cash'].map(method => (
+              <div className="flex items-center" key={method}>
+                <input
+                  type="radio"
+                  id={method}
+                  name="paymentMethod"
+                  value={method}
+                  checked={paymentMethod === method}
+                  onChange={() => setPaymentMethod(method)}
+                  className="mr-3"
+                />
+                <label htmlFor={method} className="flex items-center capitalize">
+                  <span>{method === 'card' ? 'Credit/Debit Card' : method === 'mobile' ? 'Mobile Banking' : 'Cash on Delivery'}</span>
+                </label>
+              </div>
+            ))}
           </div>
         </div>
-        
+
         {paymentMethod === 'card' && (
           <div className="mb-6 border-t pt-6">
             {session && savedCards.length > 0 && (
@@ -121,7 +119,6 @@ export default function PaymentForm({ onSubmit, loading }) {
                       </label>
                     </div>
                   ))}
-                  
                   <div className="flex items-center">
                     <input
                       type="radio"
@@ -136,7 +133,7 @@ export default function PaymentForm({ onSubmit, loading }) {
                 </div>
               </div>
             )}
-            
+
             {selectedCard === 'new' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
@@ -194,7 +191,7 @@ export default function PaymentForm({ onSubmit, loading }) {
             )}
           </div>
         )}
-        
+
         <div className="mt-8 flex justify-end">
           <button
             type="submit"

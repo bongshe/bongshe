@@ -1,11 +1,12 @@
 // src/app/layout.tsx
 
 import './globals.css'
-import type { Metadata } from 'next'
-import Navbar from '@/components/Navbar'
+import type { Metadata } from 'next/types'
 import Footer from '@/components/Footer'
 import { Toaster } from 'react-hot-toast'
 import { Providers } from './providers'
+import Navbar from '@/components/Navbar'
+
 
 export const metadata: Metadata = {
   title: 'E-Commerce Store',

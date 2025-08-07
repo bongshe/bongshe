@@ -1,4 +1,5 @@
 // app/api/users/route.ts
+
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
@@ -29,6 +30,7 @@ export async function POST(req: Request) {
       )
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Create new user
@@ -37,15 +39,20 @@ export async function POST(req: Request) {
         name,
         email,
         password: hashedPassword,
-        role: role || 'CUSTOMER'
+        role: role ?? 'CUSTOMER'
       }
     })
 
-    // Return user without password
-    const { password: _, ...userWithoutPassword } = user
+    // Remove password from returned object
+    const userWithoutPassword = {
+      ...user,
+      password: undefined
+    }
+
     return NextResponse.json(userWithoutPassword, { status: 201 })
-  } catch (error) {
-    console.error('User creation error:', error)
+
+  } catch (err) {
+    console.error('User creation error:', err)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

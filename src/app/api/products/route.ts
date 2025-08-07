@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       description: data.description,
       price: parseFloat(data.price),
       stock: parseInt(data.stock),
-      images: data.images,
+      galleryImages: data.images,
       featuredImage: data.featuredImage,
       categoryId: data.categoryId,
       subcategoryId: data.subcategoryId || null,

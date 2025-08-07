@@ -1,15 +1,18 @@
 // src/app/category/[categorySlug]/[subcategorySlug]/page.tsx
-import { notFound } from 'next/navigation';
-import { prisma } from '@/app/lib/prisma';
-import ProductCard from '@/components/ProductCard';
-import type { Metadata } from 'next';
-import type { SubcategoryPageProps } from '@/types/pages';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { categorySlug: string; subcategorySlug: string };
-}): Promise<Metadata> {
+import { prisma } from '@/app/lib/prisma'
+import ProductCard from '@/components/ProductCard'
+import type { Metadata } from 'next/types'
+import type { Product } from '@prisma/client'
+
+type PageParams = {
+  params: {
+    categorySlug: string;
+    subcategorySlug: string;
+  };
+};
+
+export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
   const subcategory = await prisma.subcategory.findFirst({
     where: {
       slug: params.subcategorySlug,
@@ -18,9 +21,7 @@ export async function generateMetadata({
     select: {
       name: true,
       category: {
-        select: {
-          name: true,
-        },
+        select: { name: true },
       },
     },
   });
@@ -35,40 +36,24 @@ export async function generateMetadata({
   };
 }
 
-export default async function SubcategoryPage({
-  params,
-}: SubcategoryPageProps) {
-  const subcategory = await prisma.subcategory.findFirst({
+export default async function SubcategoryPage({ params }: PageParams) {
+  const products = await prisma.product.findMany({
     where: {
-      slug: params.subcategorySlug,
-      category: { slug: params.categorySlug },
-    },
-    include: {
-      products: {
-        orderBy: {
-          createdAt: 'desc',
-        },
+      subcategory: {
+        slug: params.subcategorySlug,
+        category: { slug: params.categorySlug },
       },
     },
   });
 
-  if (!subcategory) {
-    return notFound();
-  }
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">{subcategory.name}</h1>
-
-      {subcategory.products.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {subcategory.products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-500">No products found in this subcategory</p>
-      )}
+    <div>
+      <h1>Products in {params.subcategorySlug}</h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {products.map((product: Product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
     </div>
   );
 }

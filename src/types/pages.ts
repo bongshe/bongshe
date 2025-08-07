@@ -1,0 +1,2 @@
+// src/types/pages.ts
+
