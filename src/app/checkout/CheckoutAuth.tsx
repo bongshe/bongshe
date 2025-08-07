@@ -76,8 +76,9 @@ export default function CheckoutAuth({
       } else {
         onLoginSuccess();
       }
-    } catch (err: any) {
-      setError(err.message || "Login failed");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Login failed";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -142,8 +143,10 @@ export default function CheckoutAuth({
       }
 
       onLoginSuccess();
-    } catch (err: any) {
-      setError(err.message || "Failed to create account");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to create account";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -201,7 +204,9 @@ export default function CheckoutAuth({
 
           {!isLogin && (
             <div className="mb-4">
-              <label className="block text-sm font-medium">Confirm Password</label>
+              <label className="block text-sm font-medium">
+                Confirm Password
+              </label>
               <input
                 type="password"
                 value={confirmPassword}
@@ -235,11 +240,14 @@ export default function CheckoutAuth({
       ) : (
         <>
           <p className="mb-4">
-            A verification code has been sent to <strong>{contactInfo.phone}</strong>.
+            A verification code has been sent to{" "}
+            <strong>{contactInfo.phone}</strong>.
           </p>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium">Verification Code</label>
+            <label className="block text-sm font-medium">
+              Verification Code
+            </label>
             <input
               type="text"
               value={verificationCode}
@@ -257,7 +265,9 @@ export default function CheckoutAuth({
           </button>
 
           {countdown > 0 ? (
-            <p className="text-sm mt-2 text-gray-500">Resend code in {countdown}s</p>
+            <p className="text-sm mt-2 text-gray-500">
+              Resend code in {countdown}s
+            </p>
           ) : (
             <button
               onClick={resendCode}

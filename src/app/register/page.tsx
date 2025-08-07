@@ -12,15 +12,20 @@ export default function RegisterPage() {
   const [error, setError] = useState('')
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
-    
-    try {      
+
+    try {
       const response = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password: password, role: 'CUSTOMER' })
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role: 'CUSTOMER',
+        }),
       })
 
       if (!response.ok) {
@@ -29,8 +34,12 @@ export default function RegisterPage() {
       }
 
       router.push('/login')
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during registration')
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'An unknown error occurred during registration'
+      setError(message)
     }
   }
 
@@ -42,17 +51,22 @@ export default function RegisterPage() {
             Create your account
           </h2>
         </div>
-        
+
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+            role="alert"
+          >
             <span className="block sm:inline">{error}</span>
           </div>
         )}
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="name" className="sr-only">Full Name</label>
+              <label htmlFor="name" className="sr-only">
+                Full Name
+              </label>
               <input
                 id="name"
                 name="name"
@@ -64,8 +78,11 @@ export default function RegisterPage() {
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
+
             <div>
-              <label htmlFor="email-address" className="sr-only">Email address</label>
+              <label htmlFor="email-address" className="sr-only">
+                Email address
+              </label>
               <input
                 id="email-address"
                 name="email"
@@ -78,8 +95,11 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+
             <div>
-              <label htmlFor="password" className="sr-only">Password</label>
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
               <input
                 id="password"
                 name="password"
@@ -102,11 +122,14 @@ export default function RegisterPage() {
               Register
             </button>
           </div>
-          
+
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
-              <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+              <Link
+                href="/login"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
                 Sign in
               </Link>
             </p>

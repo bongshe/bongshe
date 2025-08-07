@@ -27,9 +27,11 @@ export async function sendWhatsappVerification(phone: string, code: string) {
     })
 
     return { success: true }
-  } catch (error: any) {
-    console.error('WhatsApp sending failed:', error.message)
-    return { success: false, error: error.message }
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Unknown WhatsApp error'
+    console.error('WhatsApp sending failed:', message)
+    return { success: false, error: message }
   }
 }
 

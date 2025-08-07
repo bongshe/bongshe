@@ -1,27 +1,27 @@
-// src/app/api/admin/products.ts
+// src/app/api/admin/products/route.ts
 
-import { prisma } from "@/app/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { prisma } from "@/app/lib/prisma"
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions)
 
     if (!session || !session.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-    });
+    })
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    const body = await req.json();
+    const body = await req.json()
 
     const {
       title,
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       categoryId,
       subcategoryId,
       status,
-    } = body;
+    } = body
 
     if (
       !title ||
@@ -46,7 +46,10 @@ export async function POST(req: NextRequest) {
       !description ||
       !categoryId
     ) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      )
     }
 
     const newProduct = await prisma.product.create({
@@ -71,14 +74,17 @@ export async function POST(req: NextRequest) {
           connect: { id: user.id },
         },
       },
-    });
+    })
 
-    return NextResponse.json(newProduct, { status: 201 });
-  } catch (error: any) {
-    console.error("Error creating product:", error);
+    return NextResponse.json(newProduct, { status: 201 })
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown server error"
+    console.error("Error creating product:", message)
+
     return NextResponse.json(
-      { error: "Server error", message: error.message },
+      { error: "Server error", message },
       { status: 500 }
-    );
+    )
   }
 }
